@@ -1,5 +1,5 @@
-import { createPlayer, createGround, createGoal, handlePlayerMovement } from './styles.js';
-import { createObstacles, LEVEL1_OBSTACLES } from './obstacles.js';
+import { createPlayer, createGround, handlePlayerMovement, setupGoalWithMessage } from '../styles.js';
+import { createObstacles, LEVEL1_OBSTACLES, GOALS_CONFIG } from '../obstacles.js';
 
 export class Level1 extends Phaser.Scene {
     constructor() {
@@ -7,6 +7,9 @@ export class Level1 extends Phaser.Scene {
     }
 
     create() {
+        // Fondo mejorado
+        this.cameras.main.setBackgroundColor('#1a1a2e');
+        
         let cursors = this.input.keyboard.createCursorKeys();
         
         // Usar funciones del archivo de estilos
@@ -17,17 +20,26 @@ export class Level1 extends Phaser.Scene {
         // Crear obstáculos usando configuración
         createObstacles(this, LEVEL1_OBSTACLES, player);
         
-        // Crear meta
-        let goal = createGoal(this, 770, 520);
+        // Crear meta con overlay
+        const { goal, message } = setupGoalWithMessage(this, player, GOALS_CONFIG.level1.x, GOALS_CONFIG.level1.y);
         
-        let message = this.add.text(400, 100, "¡META ALCANZADA!", {
-            fontSize: '64px',
-            fill: '#ffff00',
+        // Animar meta con rotación
+        this.tweens.add({
+            targets: goal,
+            rotation: Math.PI * 2,
+            duration: 3000,
+            repeat: -1,
+            ease: 'Linear'
+        });
+        
+        // Título del nivel
+        this.add.text(400, 20, "NIVEL 1 - INICIO", {
+            fontSize: '20px',
+            fill: '#00ff00',
             fontStyle: 'bold',
             align: 'center'
-        });
-        message.setOrigin(0.5, 0);
-        message.setVisible(false);
+        }).setOrigin(0.5);
+        
         let btnMenu = this.add.rectangle(50, 20, 80, 30, 0xff6600);
         this.add.text(50, 20, "MENÚ", {
             fontSize: '14px',
@@ -36,18 +48,12 @@ export class Level1 extends Phaser.Scene {
         }).setOrigin(0.5);
         btnMenu.setInteractive();
         btnMenu.on('pointerdown', () => this.scene.start('Menu'));
-        this.physics.add.overlap(player, goal, () => {
-            goal.setTint(0xffffff);
-            message.setVisible(true);
-            this.time.delayedCall(2000, () => {
-                this.scene.restart();
-            });
-        });
+        
         this.player = player;
         this.cursors = cursors;
     }
 
     update() {
-        handlePlayerMovement(this.player, this.cursors);
+        handlePlayerMovement(this.player, this.cursors, this);
     }
 }

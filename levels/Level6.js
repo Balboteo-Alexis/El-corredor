@@ -1,5 +1,5 @@
-import { createPlayer, createGround, createGoal, handlePlayerMovement } from './styles.js';
-import { createPlatforms, LEVEL6_PLATFORMS } from './obstacles.js';
+import { createPlayer, createGround, handlePlayerMovement, setupGoalWithMessage } from '../styles.js';
+import { createPlatforms, LEVEL6_PLATFORMS, GOALS_CONFIG } from '../obstacles.js';
 
 export class Level6 extends Phaser.Scene {
     constructor() {
@@ -17,16 +17,8 @@ export class Level6 extends Phaser.Scene {
         let platforms = [];
         createPlatforms(this, LEVEL6_PLATFORMS, player);
         
-        let goal = createGoal(this, 770, 150);
-        
-        let message = this.add.text(400, 100, "¡META ALCANZADA!", {
-            fontSize: '64px',
-            fill: '#ffff00',
-            fontStyle: 'bold',
-            align: 'center'
-        });
-        message.setOrigin(0.5, 0);
-        message.setVisible(false);
+        // Crear meta con overlay
+        const { goal, message } = setupGoalWithMessage(this, player, GOALS_CONFIG.level6.x, GOALS_CONFIG.level6.y);
         
         this.add.text(400, 20, "NIVEL 6", {
             fontSize: '24px',
@@ -44,19 +36,11 @@ export class Level6 extends Phaser.Scene {
         btnMenu.setInteractive();
         btnMenu.on('pointerdown', () => this.scene.start('Menu'));
         
-        this.physics.add.overlap(player, goal, () => {
-            goal.setTint(0xffffff);
-            message.setVisible(true);
-            this.time.delayedCall(2000, () => {
-                this.scene.restart();
-            });
-        });
-        
         this.player = player;
         this.cursors = cursors;
     }
 
     update() {
-        handlePlayerMovement(this.player, this.cursors);
+        handlePlayerMovement(this.player, this.cursors, this);
     }
 }
